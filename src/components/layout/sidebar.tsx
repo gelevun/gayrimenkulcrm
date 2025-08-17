@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Shield,
   Award,
-  Trees
+  Trees,
+  LogOut
 } from "lucide-react";
 
 interface SidebarProps {
@@ -129,11 +130,11 @@ export function Sidebar({ className }: SidebarProps) {
 
   return (
     <div className={cn(
-      "pb-12 w-64 bg-white border-r border-gray-200 transition-all duration-300",
+      "pb-12 w-64 bg-white border-r border-gray-200 transition-all duration-300 flex flex-col",
       isCollapsed && "w-16",
       className
     )}>
-      <div className="space-y-4 py-4">
+      <div className="flex-1 space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="flex items-center mb-6">
             {!isCollapsed && (
@@ -204,17 +205,19 @@ export function Sidebar({ className }: SidebarProps) {
             ))}
           </div>
         </div>
-        
-        <div className="px-3 py-2 absolute bottom-4 w-full">
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={() => router.push('/login')}
-          >
-            <User className="h-4 w-4 mr-2" />
-            {!isCollapsed && "Çıkış Yap"}
-          </Button>
-        </div>
+      </div>
+      
+      {/* Çıkış Butonu - En Altta */}
+      <div className="px-3 py-2 border-t border-gray-200">
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full justify-center text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+          onClick={() => router.push('/login')}
+        >
+          <LogOut className="h-4 w-4 mr-2" />
+          {!isCollapsed && "Çıkış Yap"}
+        </Button>
       </div>
       
       {/* Collapse Toggle */}
