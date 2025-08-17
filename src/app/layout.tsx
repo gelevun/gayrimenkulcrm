@@ -2,26 +2,26 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { AuthProvider } from "@/contexts/auth-context";
+import { AuthWrapper } from "@/components/providers/auth-wrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Gayrimenkul CRM - Emlak Yönetim Sistemi",
-  description: "Profesyonel gayrimenkul danışmanları için kapsamlı CRM ve emlak yönetim sistemi. Müşteri takibi, portföy yönetimi, finansal işlemler ve daha fazlası.",
-  authors: [{ name: "Gayrimenkul CRM Team" }],
-  keywords: ["Gayrimenkul CRM", "Emlak Yönetimi", "CRM", "Portföy Yönetimi", "Gayrimenkul Danışmanı"],
+  title: "ArsaRazi - Balıkesir Arsa ve Arazi İlanları",
+  description: "Balıkesir'in en güvenilir arsa ve arazi danışmanlık şirketi. Edremit, Ayvalık, Bandırma ve diğer ilçelerde yatırıma uygun arsa ve arazi seçenekleri.",
+  authors: [{ name: "ArsaRazi Team" }],
+  keywords: ["ArsaRazi", "Balıkesir Arsa", "Balıkesir Arazi", "Edremit Arsa", "Ayvalık Arsa", "Bandırma Arsa", "Gayrimenkul", "Arsa Satışı", "Arazi Satışı"],
   openGraph: {
-    title: "Gayrimenkul CRM - Emlak Yönetim Sistemi",
-    description: "Profesyonel gayrimenkul danışmanları için kapsamlı CRM ve emlak yönetim sistemi",
-    url: "https://chat.z.ai",
-    siteName: "Gayrimenkul CRM",
+    title: "ArsaRazi - Balıkesir Arsa ve Arazi İlanları",
+    description: "Balıkesir'in en güvenilir arsa ve arazi danışmanlık şirketi",
+    url: "https://arsarazi.com",
+    siteName: "ArsaRazi",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Gayrimenkul CRM - Emlak Yönetim Sistemi",
-    description: "Profesyonel gayrimenkul danışmanları için kapsamlı CRM ve emlak yönetim sistemi",
+    title: "ArsaRazi - Balıkesir Arsa ve Arazi İlanları",
+    description: "Balıkesir'in en güvenilir arsa ve arazi danışmanlık şirketi",
   },
   icons: {
     icon: "/favicon.ico",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   other: {
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
-    "apple-mobile-web-app-title": "Gayrimenkul CRM",
+    "apple-mobile-web-app-title": "ArsaRazi",
     "format-detection": "telephone=no",
     "mobile-web-app-capable": "yes",
     "msapplication-config": "/browserconfig.xml",
@@ -56,7 +56,7 @@ export default function RootLayout({
         {/* Safari uyumluluğu için ek meta tag'ler */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Gayrimenkul CRM" />
+        <meta name="apple-mobile-web-app-title" content="ArsaRazi" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#ffffff" />
@@ -114,10 +114,10 @@ export default function RootLayout({
         }} />
       </head>
       <body className={`${inter.className} antialiased bg-background text-foreground`}>
-        <AuthProvider>
+        <AuthWrapper>
           {children}
           <Toaster />
-        </AuthProvider>
+        </AuthWrapper>
       </body>
     </html>
   );
