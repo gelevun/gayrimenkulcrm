@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Building2, Shield, Award, Home, LogIn, Eye, EyeOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 export default function LoginPage() {
   const router = useRouter();

@@ -43,6 +43,8 @@ import { Header } from "@/components/layout/header";
 import { useProperties, Property, useCustomers } from "@/hooks/use-api";
 import { useUpload } from "@/hooks/use-upload";
 import { FileUpload } from "@/components/ui/file-upload";
+import { ProtectedRoute } from "@/components/auth/protected-route";
+import { useAuth } from "@/contexts/auth-context";
 
 
 const statusColors = {
@@ -135,7 +137,7 @@ const initialFormData: PropertyFormData = {
   customerId: "",
 };
 
-export default function PropertiesPage() {
+function PropertiesContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -145,6 +147,9 @@ export default function PropertiesPage() {
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Auth context
+  const { user, hasPermission } = useAuth();
 
   // API hooks
   const { properties, loading, error, createProperty, updateProperty, deleteProperty } = useProperties({
@@ -156,6 +161,50 @@ export default function PropertiesPage() {
 
   const officeProperties = properties.filter(p => !p.customerId);
   const customerProperties = properties.filter(p => p.customerId);
+
+  // Yetki kontrolü
+  const canReadProperties = hasPermission('properties:read');
+  const canWriteProperties = hasPermission('properties:write');
+
+  if (!canReadProperties) {
+    return (
+      <div className="flex h-screen bg-gradient-to-br from-green-50 to-emerald-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-50 p-6">
+            <div className="flex items-center justify-center h-full">
+              <Card className="w-full max-w-md">
+                <CardHeader className="text-center">
+                  <div className="flex justify-center mb-4">
+                    <Building2 className="h-16 w-16 text-red-500" />
+                  </div>
+                  <CardTitle>Yetki Gerekli</CardTitle>
+                  <CardDescription>
+                    Bu sayfaya erişmek için gerekli yetkiye sahip değilsiniz.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  <div className="text-sm text-gray-500">
+                    <p>Mevcut Rol: <span className="font-semibold">{user?.role}</span></p>
+                    <p>Gerekli Yetki: <span className="font-semibold">properties:read</span></p>
+                  </div>
+                  <div className="flex space-x-2 justify-center">
+                    <Button variant="outline" onClick={() => window.history.back()}>
+                      Geri Dön
+                    </Button>
+                    <Button onClick={() => window.location.href = '/'}>
+                      Ana Sayfa
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('tr-TR', {
@@ -338,13 +387,13 @@ export default function PropertiesPage() {
   );
 
   return (
-      <div className="flex h-screen bg-gradient-to-br from-green-50 to-emerald-50">
-        <Sidebar />
+    <div className="flex h-screen bg-gradient-to-br from-green-50 to-emerald-50">
+      <Sidebar />
+      
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header />
         
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header />
-          
-          <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-50 p-6">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-50 p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Emlak Portföy Yönetimi</h1>
             <p className="text-gray-600 mt-2">Ofis ve müşteri portföylerinizi yönetin</p>
@@ -465,263 +514,265 @@ export default function PropertiesPage() {
                       <List className="h-4 w-4" />
                     </Button>
                   </div>
-                  <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
-                    setIsAddDialogOpen(open);
-                    if (!open) resetForm();
-                  }}>
-                    <DialogTrigger asChild>
-                      <Button>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Yeni Emlak
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
-                      <DialogHeader>
-                        <DialogTitle>Yeni Emlak Ekle</DialogTitle>
-                        <DialogDescription>
-                          Yeni bir emlak eklemek için bilgileri doldurun.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <div className="grid gap-4 py-4">
-                        {formError && (
-                          <Alert variant="destructive">
-                            <AlertDescription>{formError}</AlertDescription>
-                          </Alert>
-                        )}
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="title">Başlık *</Label>
-                            <Input
-                              id="title"
-                              value={formData.title}
-                              onChange={(e) => setFormData({...formData, title: e.target.value})}
-                              placeholder="Emlak başlığı"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="propertyType">Emlak Türü *</Label>
-                            <Select value={formData.propertyType} onValueChange={(value) => setFormData({...formData, propertyType: value})}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Arsa">Arsa</SelectItem>
-                                <SelectItem value="Arazi">Arazi</SelectItem>
-                                <SelectItem value="Bina">Bina</SelectItem>
-                                <SelectItem value="Daire">Daire</SelectItem>
-                                <SelectItem value="Villa">Villa</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="description">Açıklama</Label>
-                          <Textarea
-                            id="description"
-                            value={formData.description}
-                            onChange={(e) => setFormData({...formData, description: e.target.value})}
-                            placeholder="Emlak açıklaması"
-                            rows={3}
-                          />
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="city">İl *</Label>
-                            <Input
-                              id="city"
-                              value={formData.city}
-                              onChange={(e) => setFormData({...formData, city: e.target.value})}
-                              placeholder="İstanbul"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="district">İlçe *</Label>
-                            <Input
-                              id="district"
-                              value={formData.district}
-                              onChange={(e) => setFormData({...formData, district: e.target.value})}
-                              placeholder="Beşiktaş"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="neighborhood">Mahalle</Label>
-                            <Input
-                              id="neighborhood"
-                              value={formData.neighborhood}
-                              onChange={(e) => setFormData({...formData, neighborhood: e.target.value})}
-                              placeholder="Mahalle"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="netArea">Net Alan (m²) *</Label>
-                            <Input
-                              id="netArea"
-                              type="number"
-                              value={formData.netArea}
-                              onChange={(e) => setFormData({...formData, netArea: parseFloat(e.target.value) || 0})}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="grossArea">Brüt Alan (m²)</Label>
-                            <Input
-                              id="grossArea"
-                              type="number"
-                              value={formData.grossArea}
-                              onChange={(e) => setFormData({...formData, grossArea: parseFloat(e.target.value) || 0})}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="priceTL">Fiyat (TL) *</Label>
-                            <Input
-                              id="priceTL"
-                              type="number"
-                              value={formData.priceTL}
-                              onChange={(e) => setFormData({...formData, priceTL: parseFloat(e.target.value) || 0})}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="priceUSD">Fiyat (USD)</Label>
-                            <Input
-                              id="priceUSD"
-                              type="number"
-                              value={formData.priceUSD}
-                              onChange={(e) => setFormData({...formData, priceUSD: parseFloat(e.target.value) || 0})}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="priceEUR">Fiyat (EUR)</Label>
-                            <Input
-                              id="priceEUR"
-                              type="number"
-                              value={formData.priceEUR}
-                              onChange={(e) => setFormData({...formData, priceEUR: parseFloat(e.target.value) || 0})}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="status">Durum</Label>
-                            <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="SATISTA">Satışta</SelectItem>
-                                <SelectItem value="REZERVE">Rezerve</SelectItem>
-                                <SelectItem value="SATILDI">Satıldı</SelectItem>
-                                <SelectItem value="BEKLEMEDE">Beklemede</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="zoningStatus">İmar Durumu</Label>
-                            <Select value={formData.zoningStatus} onValueChange={(value: any) => setFormData({...formData, zoningStatus: value})}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="IMARLI">İmarlı</SelectItem>
-                                <SelectItem value="IMARSIZ">İmarsız</SelectItem>
-                                <SelectItem value="KISMEN_IMARLI">Kısmen İmarlı</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="parcelNumber">Ada No</Label>
-                            <Input
-                              id="parcelNumber"
-                              value={formData.parcelNumber}
-                              onChange={(e) => setFormData({...formData, parcelNumber: e.target.value})}
-                              placeholder="Ada numarası"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="blockNumber">Parsel No</Label>
-                            <Input
-                              id="blockNumber"
-                              value={formData.blockNumber}
-                              onChange={(e) => setFormData({...formData, blockNumber: e.target.value})}
-                              placeholder="Parsel numarası"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label>Altyapı Durumu</Label>
+                  {canWriteProperties && (
+                    <Dialog open={isAddDialogOpen} onOpenChange={(open) => {
+                      setIsAddDialogOpen(open);
+                      if (!open) resetForm();
+                    }}>
+                      <DialogTrigger asChild>
+                        <Button>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Yeni Emlak
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Yeni Emlak Ekle</DialogTitle>
+                          <DialogDescription>
+                            Yeni bir emlak eklemek için bilgileri doldurun.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          {formError && (
+                            <Alert variant="destructive">
+                              <AlertDescription>{formError}</AlertDescription>
+                            </Alert>
+                          )}
+                          
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="hasElectricity"
-                                checked={formData.hasElectricity}
-                                onCheckedChange={(checked) => setFormData({...formData, hasElectricity: checked as boolean})}
+                            <div className="space-y-2">
+                              <Label htmlFor="title">Başlık *</Label>
+                              <Input
+                                id="title"
+                                value={formData.title}
+                                onChange={(e) => setFormData({...formData, title: e.target.value})}
+                                placeholder="Emlak başlığı"
                               />
-                              <Label htmlFor="hasElectricity">Elektrik</Label>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="hasWater"
-                                checked={formData.hasWater}
-                                onCheckedChange={(checked) => setFormData({...formData, hasWater: checked as boolean})}
-                              />
-                              <Label htmlFor="hasWater">Su</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="hasGas"
-                                checked={formData.hasGas}
-                                onCheckedChange={(checked) => setFormData({...formData, hasGas: checked as boolean})}
-                              />
-                              <Label htmlFor="hasGas">Doğalgaz</Label>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="hasSewerage"
-                                checked={formData.hasSewerage}
-                                onCheckedChange={(checked) => setFormData({...formData, hasSewerage: checked as boolean})}
-                              />
-                              <Label htmlFor="hasSewerage">Kanalizasyon</Label>
+                            <div className="space-y-2">
+                              <Label htmlFor="propertyType">Emlak Türü *</Label>
+                              <Select value={formData.propertyType} onValueChange={(value) => setFormData({...formData, propertyType: value})}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Arsa">Arsa</SelectItem>
+                                  <SelectItem value="Arazi">Arazi</SelectItem>
+                                  <SelectItem value="Bina">Bina</SelectItem>
+                                  <SelectItem value="Daire">Daire</SelectItem>
+                                  <SelectItem value="Villa">Villa</SelectItem>
+                                </SelectContent>
+                              </Select>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Dosya Yükleme Alanı */}
-                        <div className="space-y-2">
-                          <Label>Emlak Fotoğrafları ve Videoları</Label>
-                          <FileUpload
-                            onUpload={handleFileUpload}
-                            onRemove={handleFileRemove}
-                            acceptedTypes="all"
-                            multiple={true}
-                            maxFiles={10}
-                            maxSize={50}
-                          />
+                          <div className="space-y-2">
+                            <Label htmlFor="description">Açıklama</Label>
+                            <Textarea
+                              id="description"
+                              value={formData.description}
+                              onChange={(e) => setFormData({...formData, description: e.target.value})}
+                              placeholder="Emlak açıklaması"
+                              rows={3}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="city">İl *</Label>
+                              <Input
+                                id="city"
+                                value={formData.city}
+                                onChange={(e) => setFormData({...formData, city: e.target.value})}
+                                placeholder="İstanbul"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="district">İlçe *</Label>
+                              <Input
+                                id="district"
+                                value={formData.district}
+                                onChange={(e) => setFormData({...formData, district: e.target.value})}
+                                placeholder="Beşiktaş"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="neighborhood">Mahalle</Label>
+                              <Input
+                                id="neighborhood"
+                                value={formData.neighborhood}
+                                onChange={(e) => setFormData({...formData, neighborhood: e.target.value})}
+                                placeholder="Mahalle"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="netArea">Net Alan (m²) *</Label>
+                              <Input
+                                id="netArea"
+                                type="number"
+                                value={formData.netArea}
+                                onChange={(e) => setFormData({...formData, netArea: parseFloat(e.target.value) || 0})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="grossArea">Brüt Alan (m²)</Label>
+                              <Input
+                                id="grossArea"
+                                type="number"
+                                value={formData.grossArea}
+                                onChange={(e) => setFormData({...formData, grossArea: parseFloat(e.target.value) || 0})}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="priceTL">Fiyat (TL) *</Label>
+                              <Input
+                                id="priceTL"
+                                type="number"
+                                value={formData.priceTL}
+                                onChange={(e) => setFormData({...formData, priceTL: parseFloat(e.target.value) || 0})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="priceUSD">Fiyat (USD)</Label>
+                              <Input
+                                id="priceUSD"
+                                type="number"
+                                value={formData.priceUSD}
+                                onChange={(e) => setFormData({...formData, priceUSD: parseFloat(e.target.value) || 0})}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="priceEUR">Fiyat (EUR)</Label>
+                              <Input
+                                id="priceEUR"
+                                type="number"
+                                value={formData.priceEUR}
+                                onChange={(e) => setFormData({...formData, priceEUR: parseFloat(e.target.value) || 0})}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="status">Durum</Label>
+                              <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="SATISTA">Satışta</SelectItem>
+                                  <SelectItem value="REZERVE">Rezerve</SelectItem>
+                                  <SelectItem value="SATILDI">Satıldı</SelectItem>
+                                  <SelectItem value="BEKLEMEDE">Beklemede</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="zoningStatus">İmar Durumu</Label>
+                              <Select value={formData.zoningStatus} onValueChange={(value: any) => setFormData({...formData, zoningStatus: value})}>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="IMARLI">İmarlı</SelectItem>
+                                  <SelectItem value="IMARSIZ">İmarsız</SelectItem>
+                                  <SelectItem value="KISMEN_IMARLI">Kısmen İmarlı</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="parcelNumber">Ada No</Label>
+                              <Input
+                                id="parcelNumber"
+                                value={formData.parcelNumber}
+                                onChange={(e) => setFormData({...formData, parcelNumber: e.target.value})}
+                                placeholder="Ada numarası"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="blockNumber">Parsel No</Label>
+                              <Input
+                                id="blockNumber"
+                                value={formData.blockNumber}
+                                onChange={(e) => setFormData({...formData, blockNumber: e.target.value})}
+                                placeholder="Parsel numarası"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>Altyapı Durumu</Label>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="hasElectricity"
+                                  checked={formData.hasElectricity}
+                                  onCheckedChange={(checked) => setFormData({...formData, hasElectricity: checked as boolean})}
+                                />
+                                <Label htmlFor="hasElectricity">Elektrik</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="hasWater"
+                                  checked={formData.hasWater}
+                                  onCheckedChange={(checked) => setFormData({...formData, hasWater: checked as boolean})}
+                                />
+                                <Label htmlFor="hasWater">Su</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="hasGas"
+                                  checked={formData.hasGas}
+                                  onCheckedChange={(checked) => setFormData({...formData, hasGas: checked as boolean})}
+                                />
+                                <Label htmlFor="hasGas">Doğalgaz</Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="hasSewerage"
+                                  checked={formData.hasSewerage}
+                                  onCheckedChange={(checked) => setFormData({...formData, hasSewerage: checked as boolean})}
+                                />
+                                <Label htmlFor="hasSewerage">Kanalizasyon</Label>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Dosya Yükleme Alanı */}
+                          <div className="space-y-2">
+                            <Label>Emlak Fotoğrafları ve Videoları</Label>
+                            <FileUpload
+                              onUpload={handleFileUpload}
+                              onRemove={handleFileRemove}
+                              acceptedTypes="all"
+                              multiple={true}
+                              maxFiles={10}
+                              maxSize={50}
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
-                          <X className="h-4 w-4 mr-2" />
-                          İptal
-                        </Button>
-                        <Button onClick={handleAddProperty} disabled={isSubmitting}>
-                          <Save className="h-4 w-4 mr-2" />
-                          {isSubmitting ? "Kaydediliyor..." : "Kaydet"}
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                            <X className="h-4 w-4 mr-2" />
+                            İptal
+                          </Button>
+                          <Button onClick={handleAddProperty} disabled={isSubmitting}>
+                            <Save className="h-4 w-4 mr-2" />
+                            {isSubmitting ? "Kaydediliyor..." : "Kaydet"}
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -925,5 +976,13 @@ export default function PropertiesPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <ProtectedRoute>
+      <PropertiesContent />
+    </ProtectedRoute>
   );
 }
