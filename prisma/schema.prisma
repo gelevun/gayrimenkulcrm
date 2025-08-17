@@ -1,0 +1,425 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Kullanıcı Rollerini Enum olarak tanımla
+enum UserRole {
+  ADMIN
+  DANISMAN
+  MUSTERI
+}
+
+// Müşteri Türlerini Enum olarak tanımla
+enum CustomerType {
+  ALICI
+  SATICI
+  GAYRIMENKUL_DANISMANI
+}
+
+// Emlak Durumunu Enum olarak tanımla
+enum PropertyStatus {
+  SATISTA
+  REZERVE
+  SATILDI
+  BEKLEMEDE
+}
+
+// İmar Durumunu Enum olarak tanımla
+enum ZoningStatus {
+  IMARLI
+  IMARSIZ
+  KISMEN_IMARLI
+}
+
+// Medya Türünü Enum olarak tanımla
+enum MediaType {
+  FOTOGRAF
+  VIDEO
+  DOKUMAN
+  PANORAMIK
+}
+
+// Belge Türünü Enum olarak tanımla
+enum DocumentType {
+  VEKALETNAME
+  TAPU
+  IMAR_DURUMU
+  EKSPERTIZ_RAPORU
+  SATIS_TALIMATI
+  MAKBUZ
+  DIGER
+}
+
+// Kullanıcı Modeli
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  phone       String?
+  role        UserRole @default(DANISMAN)
+  avatar      String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // İlişkiler
+  customers   Customer[]
+  properties  Property[]
+  sales       Sale[]
+  purchases   Purchase[]
+  commissions Commission[]
+  auditLogs   AuditLog[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+// Müşteri Modeli
+model Customer {
+  id              String       @id @default(cuid())
+  name            String
+  email           String?
+  phone           String?
+  type            CustomerType
+  address         String?
+  city            String?
+  district        String?
+  notes           String?
+  priorityScore   Int          @default(0)
+  referredBy      String?      // Referans veren kişi
+  isActive        Boolean      @default(true)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // İlişkiler
+  userId          String?
+  user            User?        @relation(fields: [userId], references: [id])
+  properties      Property[]
+  sales           Sale[]
+  purchases       Purchase[]
+  communications  Communication[]
+  authorizations  Authorization[]
+
+  @@map("customers")
+}
+
+// Emlak Modeli
+model Property {
+  id                    String        @id @default(cuid())
+  title                 String
+  description           String?
+  propertyType          String        // "Arsa", "Arazi", "Bina", etc.
+  status                PropertyStatus @default(BEKLEMEDE)
+  
+  // Lokasyon Bilgileri
+  city                  String
+  district              String
+  neighborhood          String?
+  address               String?
+  latitude              Float?
+  longitude             Float?
+  
+  // Kadastral Bilgiler
+  parcelNumber          String?
+  blockNumber           String?
+  
+  // Alan Bilgileri
+  netArea               Float
+  grossArea             Float?
+  
+  // İmar Durumu
+  zoningStatus          ZoningStatus?
+  zoningDetails         String?       // İmar detayları
+  maxFloors             Int?          // Kat sınırı
+  kaks                  Float?        // KAKS oranı
+  gabari                Float?        // Gabari oranı
+  
+  // Altyapı Durumu
+  hasElectricity        Boolean       @default(false)
+  hasWater              Boolean       @default(false)
+  hasGas                Boolean       @default(false)
+  hasSewerage           Boolean       @default(false)
+  
+  // Ulaşım Bilgileri
+  distanceToMainRoad    Float?        // Ana yola mesafe (metre)
+  publicTransportAccess Boolean       @default(false)
+  
+  // Mülkiyet Durumu
+  ownershipStatus       String?       // Tapu durumu
+  shareInfo             String?       // Hisse bilgileri
+  
+  // Fiyat Bilgileri
+  priceTL               Float
+  priceUSD              Float?
+  priceEUR              Float?
+  priceGoldGrams        Float?
+  
+  // Diğer Bilgiler
+  constructionPermit    Boolean       @default(false)
+  licenseInfo           String?
+  
+  // İlişkiler
+  userId                String?
+  user                  User?         @relation(fields: [userId], references: [id])
+  customerId            String?
+  customer              Customer?     @relation(fields: [customerId], references: [id])
+  mediaFiles            MediaFile[]
+  sales                 Sale[]
+  purchases             Purchase[]
+  authorizations        Authorization[]
+  priceHistory          PriceHistory[]
+  zoningHistory         ZoningHistory[]
+  ownershipHistory      OwnershipHistory[]
+
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@map("properties")
+}
+
+// Medya Dosyaları Modeli
+model MediaFile {
+  id          String    @id @default(cuid())
+  filename    String
+  originalName String
+  filePath    String
+  fileType    MediaType
+  mimeType    String
+  size        Int
+  propertyId  String?
+  property    Property? @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  authorizationId String?
+  authorization Authorization? @relation(fields: [authorizationId], references: [id], onDelete: Cascade)
+  isPrimary   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  @@map("media_files")
+}
+
+// Yetki Belgeleri Modeli (Vekaletnameler, Satış Talimatları)
+model Authorization {
+  id                String      @id @default(cuid())
+  type              DocumentType
+  authorizationNumber String?
+  issueDate         DateTime
+  expiryDate        DateTime
+  notaryName        String?     // Noter adı
+  notaryCity        String?     // Noter il
+  notaryDistrict    String?     // Noter ilçe
+  scope             String?     // Yetki kapsamı
+  conditions        String?     // Şartlar
+  commissionRate    Float?      // Komisyon oranı
+  paymentTerms      String?     // Ödeme şartları
+  notes             String?
+  
+  // İlişkiler
+  propertyId        String
+  property          Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  customerId        String?
+  customer          Customer?   @relation(fields: [customerId], references: [id])
+  mediaFiles        MediaFile[]
+
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@map("authorizations")
+}
+
+// Satış İşlemleri Modeli
+model Sale {
+  id              String    @id @default(cuid())
+  saleDate        DateTime
+  priceTL         Float
+  priceUSD        Float?
+  priceEUR        Float?
+  profitTL        Float?
+  
+  // Komisyon Bilgileri
+  commissionRate  Float
+  commissionTL    Float
+  
+  // İlişkiler
+  propertyId      String
+  property        Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  customerId      String?
+  customer        Customer? @relation(fields: [customerId], references: [id])
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+  commissions     Commission[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("sales")
+}
+
+// Alış İşlemleri Modeli
+model Purchase {
+  id            String    @id @default(cuid())
+  purchaseDate  DateTime
+  priceTL       Float
+  priceUSD      Float?
+  priceEUR      Float?
+  
+  // Komisyon Bilgileri
+  commissionRate Float?
+  commissionTL   Float?
+  
+  // İlişkiler
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  customerId    String?
+  customer      Customer? @relation(fields: [customerId], references: [id])
+  userId        String?
+  user          User?     @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("purchases")
+}
+
+// Komisyon Paylaşım Modeli
+model Commission {
+  id              String    @id @default(cuid())
+  saleId          String
+  sale            Sale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  
+  // Paydaş Bilgileri
+  recipientType   String    // "Danışman", "Ofis", "Referans", "Diğer"
+  recipientId     String?   // Alıcı ID
+  recipientName   String    // Alıcı adı
+  commissionRate  Float     // Komisyon oranı
+  commissionTL    Float     // Komisyon tutarı
+  notes           String?
+  
+  // İlişkiler
+  userId          String?
+  user            User?     @relation(fields: [userId], references: [id])
+
+  createdAt       DateTime  @default(now())
+
+  @@map("commissions")
+}
+
+// İletişim Kayıtları Modeli
+model Communication {
+  id          String    @id @default(cuid())
+  type        String    // "Arama", "Randevu", "E-posta", "SMS"
+  date        DateTime
+  duration    Int?      // Süre (dakika)
+  subject     String?
+  summary     String?
+  result      String?   // Sonuç
+  notes       String?
+  
+  // İlişkiler
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+
+  @@map("communications")
+}
+
+// Fiyat Geçmişi Modeli
+model PriceHistory {
+  id          String    @id @default(cuid())
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  priceTL     Float
+  priceUSD    Float?
+  priceEUR    Float?
+  reason      String?   // Değişiklik nedeni
+  notes       String?
+  
+  changedBy   String    // Değiştiren kullanıcı ID
+  changedAt   DateTime  @default(now())
+
+  @@map("price_history")
+}
+
+// İmar Durumu Geçmişi Modeli
+model ZoningHistory {
+  id            String    @id @default(cuid())
+  propertyId    String
+  property      Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  zoningStatus  ZoningStatus
+  zoningDetails String?
+  reason        String?   // Değişiklik nedeni
+  notes         String?
+  
+  changedBy     String    // Değiştiren kullanıcı ID
+  changedAt     DateTime  @default(now())
+
+  @@map("zoning_history")
+}
+
+// Sahiplik Geçmişi Modeli
+model OwnershipHistory {
+  id          String    @id @default(cuid())
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  ownerId     String    // Sahip ID (Customer ID)
+  ownerName   String    // Sahip adı
+  transferDate DateTime // Devir tarihi
+  transferType String   // Devir şekli
+  notes       String?
+  
+  changedBy   String    // Değiştiren kullanıcı ID
+  changedAt   DateTime  @default(now())
+
+  @@map("ownership_history")
+}
+
+// Erişim Kayıtları (Audit Log) Modeli
+model AuditLog {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  
+  action      String    // Yapılan işlem
+  entityType  String    // Varlık türü (User, Customer, Property, etc.)
+  entityId    String    // Varlık ID
+  oldValue    String?   // Eski değer
+  newValue    String?   // Yeni değer
+  reason      String?   // Değişiklik nedeni
+  ipAddress   String?   // IP adresi
+  
+  createdAt   DateTime  @default(now())
+
+  @@map("audit_logs")
+}
+
+// Bildirimler Modeli
+model Notification {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  
+  title       String
+  message     String
+  type        String    // "Vekaletname", "SatışTalimatı", "Genel"
+  priority    String    // "Düşük", "Orta", "Yüksek"
+  isRead      Boolean   @default(false)
+  readAt      DateTime?
+  
+  // İlgili varlık bilgileri
+  entityType  String?   // İlgili varlık türü
+  entityId    String?   // İlgili varlık ID
+  
+  createdAt   DateTime  @default(now())
+
+  @@map("notifications")
+}
