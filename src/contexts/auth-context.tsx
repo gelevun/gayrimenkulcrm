@@ -19,6 +19,7 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
+  isHydrated: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -32,6 +33,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   // Kullanıcı yetkilerini kontrol et
   const hasPermission = (permission: string): boolean => {
@@ -121,6 +123,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Sayfa yüklendiğinde kullanıcı durumunu kontrol et
   useEffect(() => {
+    // Hydration kontrolü
+    setIsHydrated(true);
+    
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -137,6 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const value: AuthContextType = {
     user,
     isLoading,
+    isHydrated,
     login,
     logout,
     isAuthenticated: !!user,

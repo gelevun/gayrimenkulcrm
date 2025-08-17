@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Shield,
-  Award
+  Award,
+  Trees
 } from "lucide-react";
 
 interface SidebarProps {
@@ -28,6 +29,12 @@ interface SidebarProps {
 }
 
 const menuItems = [
+  {
+    title: "Ana Sayfa",
+    icon: Trees,
+    href: "/",
+    badge: null,
+  },
   {
     title: "Dashboard",
     icon: Home,
@@ -131,15 +138,15 @@ export function Sidebar({ className }: SidebarProps) {
           <div className="flex items-center mb-6">
             {!isCollapsed && (
               <div className="flex items-center space-x-2">
-                <Building2 className="h-8 w-8 text-blue-600" />
+                <Trees className="h-8 w-8 text-green-600" />
                 <div>
-                  <h2 className="text-lg font-semibold">Gayrimenkul CRM</h2>
-                  <p className="text-xs text-gray-500">Emlak Yönetim Sistemi</p>
+                  <h2 className="text-lg font-semibold">ArsaRazi</h2>
+                  <p className="text-xs text-gray-500">Balıkesir Arsa & Arazi</p>
                 </div>
               </div>
             )}
             {isCollapsed && (
-              <Building2 className="h-8 w-8 text-blue-600 mx-auto" />
+              <Trees className="h-8 w-8 text-green-600 mx-auto" />
             )}
           </div>
           
@@ -150,7 +157,7 @@ export function Sidebar({ className }: SidebarProps) {
                 variant={pathname === item.href ? "secondary" : "ghost"}
                 className={cn(
                   "w-full justify-start",
-                  pathname === item.href && "bg-blue-50 text-blue-700"
+                  pathname === item.href && "bg-green-50 text-green-700"
                 )}
                 onClick={() => router.push(item.href)}
               >
@@ -178,7 +185,7 @@ export function Sidebar({ className }: SidebarProps) {
                 variant={pathname === item.href ? "secondary" : "ghost"}
                 className={cn(
                   "w-full justify-start",
-                  pathname === item.href && "bg-blue-50 text-blue-700"
+                  pathname === item.href && "bg-green-50 text-green-700"
                 )}
                 onClick={() => router.push(item.href)}
               >

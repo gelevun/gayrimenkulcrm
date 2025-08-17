@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +13,9 @@ import {
   Settings,
   Menu,
   Plus,
-  LogOut
+  LogOut,
+  Trees,
+  Home
 } from "lucide-react";
 
 
@@ -22,6 +25,7 @@ interface HeaderProps {
 
 export function Header({ className }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
   // Mock user data for now
   const user = {
     name: "Test Kullanıcı",
@@ -38,10 +42,21 @@ export function Header({ className }: HeaderProps) {
       className
     )}>
       <div className="flex items-center justify-between">
-        {/* Sol Taraf - Arama ve Butonlar */}
+        {/* Sol Taraf - Logo, Arama ve Butonlar */}
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" className="lg:hidden">
             <Menu className="h-5 w-5" />
+          </Button>
+          
+          {/* Logo ve Ana Sayfa Linki */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push('/')}
+            className="flex items-center space-x-2 hover:bg-green-50"
+          >
+            <Trees className="h-6 w-6 text-green-600" />
+            <span className="hidden sm:block font-semibold text-green-600">ArsaRazi</span>
           </Button>
           
           <div className="relative hidden md:block">
@@ -62,6 +77,16 @@ export function Header({ className }: HeaderProps) {
 
         {/* Sağ Taraf - Kullanıcı Bilgileri ve Bildirimler */}
         <div className="flex items-center space-x-4">
+          {/* Ana Sayfa Linki */}
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push('/')}
+            title="Ana Sayfa"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+          
           {/* Bildirimler */}
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="h-5 w-5" />
@@ -82,7 +107,7 @@ export function Header({ className }: HeaderProps) {
               <p className="text-xs text-gray-500">{user?.role || "Rol"}</p>
             </div>
             <Button variant="ghost" size="sm" className="relative">
-              <div className="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+              <div className="h-8 w-8 bg-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
                 {user?.name?.split(' ').map(n => n[0]).join('') || "K"}
               </div>
             </Button>
