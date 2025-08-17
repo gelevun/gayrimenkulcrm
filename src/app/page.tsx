@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/contexts/auth-context";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -237,26 +236,10 @@ const balikesirProperties = [
 
 export default function HomePage() {
   const router = useRouter();
-  const { isAuthenticated, user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [selectedLocation, setSelectedLocation] = useState("");
   const [viewMode, setViewMode] = useState("grid");
-
-  useEffect(() => {
-    // Eğer kullanıcı giriş yapmışsa, rolüne göre yönlendir
-    if (isAuthenticated && user) {
-      if (user.role === 'ADMIN') {
-        router.push('/admin');
-      } else if (user.role === 'DANISMAN') {
-        router.push('/danisman');
-      } else if (user.role === 'MUSTERI') {
-        router.push('/musteri');
-      } else {
-        router.push('/dashboard');
-      }
-    }
-  }, [isAuthenticated, user, router]);
 
   // Filtreleme fonksiyonu
   const filteredProperties = balikesirProperties.filter(property => {
