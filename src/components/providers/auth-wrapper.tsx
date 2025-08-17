@@ -2,10 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { AuthProvider } from "@/contexts/auth-context";
-import { ReactNode } from "react";
-
-// Auth gerektirmeyen public sayfalar
-const publicPages = ["/"];
+import { ReactNode, useEffect, useState } from "react";
 
 interface AuthWrapperProps {
   children: ReactNode;
@@ -13,8 +10,18 @@ interface AuthWrapperProps {
 
 export function AuthWrapper({ children }: AuthWrapperProps) {
   const pathname = usePathname();
-  
-  // Public sayfalar için AuthProvider kullanma
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Server-side rendering sırasında AuthProvider kullan
+  if (!isClient) {
+    return <AuthProvider>{children}</AuthProvider>;
+  }
+
+  // Client-side'da pathname kontrolü yap
   if (pathname === "/") {
     return <>{children}</>;
   }

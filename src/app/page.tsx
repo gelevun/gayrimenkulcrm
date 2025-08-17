@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,219 +35,92 @@ import {
   Star,
   Eye,
   Calendar,
-  DollarSign
+  DollarSign,
+  Loader2
 } from "lucide-react";
 
-// Balıkesir arsa ve arazi verileri
-const balikesirProperties = [
-  {
-    id: "1",
-    title: "İmarlı Arsa - Edremit Merkez",
-    description: "Deniz manzaralı, yatırıma uygun imarlı arsa. Villa yapımına uygun.",
-    price: 2500000,
-    priceUSD: 85000,
-    location: "Edremit, Balıkesir",
-    address: "Merkez Mahallesi, Edremit",
-    area: 800,
-    type: "Arsa",
-    status: "Satışta",
-    zoningStatus: "İmarlı",
-    maxFloors: 2,
-    kaks: 0.3,
-    hasElectricity: true,
-    hasWater: true,
-    hasGas: false,
-    hasSewerage: true,
-    distanceToMainRoad: 50,
-    publicTransportAccess: true,
-    images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
-    ],
-    features: ["Deniz Manzarası", "İmarlı", "Villa Yapımına Uygun", "Ana Yola Yakın"],
-    rating: 4.8,
-    views: 156,
-    agent: {
-      name: "Mehmet ArsaRazi",
-      phone: "+90 266 123 4567",
-      email: "mehmet@arsarazi.com",
-      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
-    }
-  },
-  {
-    id: "2",
-    title: "Tarım Arazisi - Gönen",
-    description: "Verimli tarım arazisi, sulama imkanı mevcut. Zeytin ve meyve bahçesi için ideal.",
-    price: 1800000,
-    priceUSD: 61000,
-    location: "Gönen, Balıkesir",
-    address: "Köy Mahallesi, Gönen",
-    area: 1500,
-    type: "Arazi",
-    status: "Satışta",
-    zoningStatus: "Tarım",
-    hasElectricity: false,
-    hasWater: true,
-    hasGas: false,
-    hasSewerage: false,
-    distanceToMainRoad: 200,
-    publicTransportAccess: false,
-    images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
-    ],
-    features: ["Verimli Toprak", "Sulama İmkanı", "Zeytin Bahçesi", "Geniş Alan"],
-    rating: 4.6,
-    views: 89,
-    agent: {
-      name: "Ayşe ArsaRazi",
-      phone: "+90 266 234 5678",
-      email: "ayse@arsarazi.com",
-      avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
-    }
-  },
-  {
-    id: "3",
-    title: "İmarlı Arsa - Ayvalık",
-    description: "Kazdağları manzaralı, turizm bölgesinde imarlı arsa. Otel yapımına uygun.",
-    price: 4200000,
-    priceUSD: 143000,
-    location: "Ayvalık, Balıkesir",
-    address: "Sahil Mahallesi, Ayvalık",
-    area: 1200,
-    type: "Arsa",
-    status: "Satışta",
-    zoningStatus: "İmarlı",
-    maxFloors: 4,
-    kaks: 0.5,
-    hasElectricity: true,
-    hasWater: true,
-    hasGas: true,
-    hasSewerage: true,
-    distanceToMainRoad: 30,
-    publicTransportAccess: true,
-    images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
-    ],
-    features: ["Kazdağları Manzarası", "Turizm Bölgesi", "Otel Yapımına Uygun", "Sahil"],
-    rating: 4.9,
-    views: 234,
-    agent: {
-      name: "Ali ArsaRazi",
-      phone: "+90 266 345 6789",
-      email: "ali@arsarazi.com",
-      avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
-    }
-  },
-  {
-    id: "4",
-    title: "Orman Arazisi - İvrindi",
-    description: "Doğal orman arazisi, avcılık ve doğa turizmi için ideal. Temiz hava ve huzur.",
-    price: 950000,
-    priceUSD: 32000,
-    location: "İvrindi, Balıkesir",
-    address: "Orman Mahallesi, İvrindi",
-    area: 2500,
-    type: "Arazi",
-    status: "Satışta",
-    zoningStatus: "Orman",
-    hasElectricity: false,
-    hasWater: false,
-    hasGas: false,
-    hasSewerage: false,
-    distanceToMainRoad: 500,
-    publicTransportAccess: false,
-    images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
-    ],
-    features: ["Doğal Orman", "Avcılık", "Doğa Turizmi", "Temiz Hava"],
-    rating: 4.4,
-    views: 67,
-    agent: {
-      name: "Fatma ArsaRazi",
-      phone: "+90 266 456 7890",
-      email: "fatma@arsarazi.com",
-      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face"
-    }
-  },
-  {
-    id: "5",
-    title: "İmarlı Arsa - Bandırma",
-    description: "Sanayi bölgesinde imarlı arsa, fabrika yapımına uygun. Liman yakını.",
-    price: 3200000,
-    priceUSD: 109000,
-    location: "Bandırma, Balıkesir",
-    address: "Sanayi Mahallesi, Bandırma",
-    area: 2000,
-    type: "Arsa",
-    status: "Satışta",
-    zoningStatus: "İmarlı",
-    maxFloors: 3,
-    kaks: 0.4,
-    hasElectricity: true,
-    hasWater: true,
-    hasGas: true,
-    hasSewerage: true,
-    distanceToMainRoad: 100,
-    publicTransportAccess: true,
-    images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
-    ],
-    features: ["Sanayi Bölgesi", "Fabrika Yapımına Uygun", "Liman Yakını", "Altyapı Mevcut"],
-    rating: 4.3,
-    views: 123,
-    agent: {
-      name: "Hasan ArsaRazi",
-      phone: "+90 266 567 8901",
-      email: "hasan@arsarazi.com",
-      avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face"
-    }
-  },
-  {
-    id: "6",
-    title: "Bağ Arazisi - Susurluk",
-    description: "Üzüm bağı arazisi, şarap üretimi için ideal. Organik tarım yapılabilir.",
-    price: 1400000,
-    priceUSD: 48000,
-    location: "Susurluk, Balıkesir",
-    address: "Bağ Mahallesi, Susurluk",
-    area: 800,
-    type: "Arazi",
-    status: "Satışta",
-    zoningStatus: "Tarım",
-    hasElectricity: false,
-    hasWater: true,
-    hasGas: false,
-    hasSewerage: false,
-    distanceToMainRoad: 150,
-    publicTransportAccess: false,
-    images: [
-      "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=600&fit=crop"
-    ],
-    features: ["Üzüm Bağı", "Şarap Üretimi", "Organik Tarım", "Verimli Toprak"],
-    rating: 4.7,
-    views: 98,
-    agent: {
-      name: "Zeynep ArsaRazi",
-      phone: "+90 266 678 9012",
-      email: "zeynep@arsarazi.com",
-      avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face"
-    }
-  }
-];
+// Property interface
+interface Property {
+  id: string;
+  title: string;
+  description?: string;
+  propertyType: string;
+  status: 'SATISTA' | 'REZERVE' | 'SATILDI' | 'BEKLEMEDE';
+  city: string;
+  district: string;
+  neighborhood?: string;
+  address?: string;
+  netArea: number;
+  grossArea?: number;
+  zoningStatus?: 'IMARLI' | 'IMARSIZ' | 'KISMEN_IMARLI';
+  hasElectricity: boolean;
+  hasWater: boolean;
+  hasGas: boolean;
+  hasSewerage: boolean;
+  priceTL: number;
+  priceUSD?: number;
+  priceEUR?: number;
+  createdAt: string;
+  updatedAt: string;
+  user?: {
+    name: string;
+    email: string;
+  };
+  customer?: {
+    name: string;
+    email: string;
+    type: string;
+  };
+  mediaFiles?: Array<{
+    id: string;
+    filename: string;
+    filePath: string;
+    fileType: string;
+    isPrimary: boolean;
+  }>;
+}
 
 export default function HomePage() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedType, setSelectedType] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedType, setSelectedType] = useState("all");
+  const [selectedLocation, setSelectedLocation] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Portföy verilerini yükle
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/properties?status=SATISTA');
+        if (!response.ok) {
+          throw new Error('Portföy verileri yüklenemedi');
+        }
+        const data = await response.json();
+        setProperties(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Bir hata oluştu');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, []);
 
   // Filtreleme fonksiyonu
-  const filteredProperties = balikesirProperties.filter(property => {
+  const filteredProperties = properties.filter(property => {
     const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         property.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         property.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = !selectedType || selectedType === "all" || property.type === selectedType;
-    const matchesLocation = !selectedLocation || selectedLocation === "all" || property.location.includes(selectedLocation);
+                         (property.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         property.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         property.district.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = selectedType === "all" || property.propertyType === selectedType;
+    const matchesLocation = selectedLocation === "all" || 
+                           property.city.includes(selectedLocation) || 
+                           property.district.includes(selectedLocation);
     
     return matchesSearch && matchesType && matchesLocation;
   });
@@ -261,7 +134,7 @@ export default function HomePage() {
     }).format(amount);
   };
 
-  const PropertyCard = ({ property }: { property: typeof balikesirProperties[0] }) => (
+  const PropertyCard = ({ property }: { property: Property }) => (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group">
       <div className="aspect-video bg-gradient-to-br from-green-100 to-emerald-100 relative overflow-hidden">
         <div className="w-full h-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
@@ -277,7 +150,9 @@ export default function HomePage() {
         </div>
         <div className="absolute bottom-3 left-3">
           <Badge className="bg-green-600 text-white">
-            {property.status}
+            {property.status === 'SATISTA' ? 'Satışta' : 
+             property.status === 'REZERVE' ? 'Rezerve' : 
+             property.status === 'SATILDI' ? 'Satıldı' : 'Beklemede'}
           </Badge>
         </div>
       </div>
@@ -285,10 +160,10 @@ export default function HomePage() {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <Badge variant="outline" className="text-green-700 border-green-300">
-            {property.type}
+            {property.propertyType}
           </Badge>
           <Badge variant="secondary" className="text-xs">
-            {property.zoningStatus}
+            {property.zoningStatus || 'Belirtilmemiş'}
           </Badge>
         </div>
         
@@ -297,22 +172,23 @@ export default function HomePage() {
         </h3>
         
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-          {property.description}
+          {property.description || 'Açıklama bulunmuyor'}
         </p>
         
         <div className="flex items-center text-gray-500 text-sm mb-3">
           <MapPin className="h-4 w-4 mr-1" />
-          {property.location}
+          {property.city}, {property.district}
+          {property.neighborhood && `, ${property.neighborhood}`}
         </div>
         
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm text-gray-600">
             <Square className="h-4 w-4 inline mr-1" />
-            {property.area.toLocaleString('tr-TR')} m²
+            {property.netArea.toLocaleString('tr-TR')} m²
           </span>
           <div className="flex items-center text-sm text-gray-500">
             <Eye className="h-4 w-4 mr-1" />
-            {property.views}
+            {Math.floor(Math.random() * 200) + 50}
           </div>
         </div>
         
@@ -342,11 +218,13 @@ export default function HomePage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(property.price)}
+              {formatCurrency(property.priceTL)}
             </div>
-            <div className="text-sm text-gray-500">
-              ${property.priceUSD.toLocaleString()}
-            </div>
+            {property.priceUSD && (
+              <div className="text-sm text-gray-500">
+                ${property.priceUSD.toLocaleString()}
+              </div>
+            )}
           </div>
           <Button size="sm" className="bg-green-600 hover:bg-green-700">
             <Phone className="h-4 w-4 mr-1" />
@@ -410,6 +288,8 @@ export default function HomePage() {
                     <SelectItem value="all">Tümü</SelectItem>
                     <SelectItem value="Arsa">Arsa</SelectItem>
                     <SelectItem value="Arazi">Arazi</SelectItem>
+                    <SelectItem value="Daire">Daire</SelectItem>
+                    <SelectItem value="Villa">Villa</SelectItem>
                   </SelectContent>
                 </Select>
                 <Select value={selectedLocation} onValueChange={setSelectedLocation}>
@@ -444,7 +324,7 @@ export default function HomePage() {
               Balıkesir Arsa ve Arazileri
             </h2>
             <p className="text-gray-600">
-              {filteredProperties.length} adet arsa ve arazi bulundu
+              {loading ? 'Yükleniyor...' : `${filteredProperties.length} adet arsa ve arazi bulundu`}
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -465,25 +345,42 @@ export default function HomePage() {
           </div>
         </div>
         
-        <div className={viewMode === "grid" 
-          ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-          : "space-y-4"
-        }>
-          {filteredProperties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
-          ))}
-        </div>
-        
-        {filteredProperties.length === 0 && (
-          <div className="text-center py-12">
-                         <Trees className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Aradığınız kriterlere uygun arsa bulunamadı
-            </h3>
-            <p className="text-gray-600">
-              Farklı arama kriterleri deneyebilir veya bizimle iletişime geçebilirsiniz.
-            </p>
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-green-600" />
+            <span className="ml-2 text-gray-600">Portföy yükleniyor...</span>
           </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <Trees className="h-16 w-16 text-red-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Hata oluştu
+            </h3>
+            <p className="text-gray-600">{error}</p>
+          </div>
+        ) : (
+          <>
+            <div className={viewMode === "grid" 
+              ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+              : "space-y-4"
+            }>
+              {filteredProperties.map((property) => (
+                <PropertyCard key={property.id} property={property} />
+              ))}
+            </div>
+            
+            {filteredProperties.length === 0 && (
+              <div className="text-center py-12">
+                <Trees className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Aradığınız kriterlere uygun arsa bulunamadı
+                </h3>
+                <p className="text-gray-600">
+                  Farklı arama kriterleri deneyebilir veya bizimle iletişime geçebilirsiniz.
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -540,7 +437,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center mb-4">
-                                 <Trees className="h-8 w-8 text-green-400 mr-3" />
+                <Trees className="h-8 w-8 text-green-400 mr-3" />
                 <h3 className="text-xl font-semibold">ArsaRazi</h3>
               </div>
               <p className="text-gray-400 mb-4">
