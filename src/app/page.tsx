@@ -246,8 +246,8 @@ export default function HomePage() {
     const matchesSearch = property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          property.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          property.location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesType = !selectedType || property.type === selectedType;
-    const matchesLocation = !selectedLocation || property.location.includes(selectedLocation);
+    const matchesType = !selectedType || selectedType === "all" || property.type === selectedType;
+    const matchesLocation = !selectedLocation || selectedLocation === "all" || property.location.includes(selectedLocation);
     
     return matchesSearch && matchesType && matchesLocation;
   });
@@ -407,7 +407,7 @@ export default function HomePage() {
                     <SelectValue placeholder="Tür Seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tümü</SelectItem>
+                    <SelectItem value="all">Tümü</SelectItem>
                     <SelectItem value="Arsa">Arsa</SelectItem>
                     <SelectItem value="Arazi">Arazi</SelectItem>
                   </SelectContent>
@@ -417,7 +417,7 @@ export default function HomePage() {
                     <SelectValue placeholder="İlçe Seçin" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Tümü</SelectItem>
+                    <SelectItem value="all">Tümü</SelectItem>
                     <SelectItem value="Edremit">Edremit</SelectItem>
                     <SelectItem value="Ayvalık">Ayvalık</SelectItem>
                     <SelectItem value="Bandırma">Bandırma</SelectItem>
