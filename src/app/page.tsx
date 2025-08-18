@@ -36,7 +36,8 @@ import {
   Eye,
   Calendar,
   DollarSign,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react";
 
 // Property interface
@@ -295,47 +296,158 @@ export default function HomePage() {
             </p>
             
             {/* Search Bar */}
-            <div className="max-w-4xl mx-auto bg-white rounded-lg p-4 shadow-lg">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                  <Input
-                    placeholder="Arsa veya arazi ara..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+            <div className="max-w-5xl mx-auto">
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-2xl border border-white/20">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-end">
+                  {/* Arama Kutusu */}
+                  <div className="lg:col-span-2">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <Search className="h-4 w-4 inline mr-2" />
+                      Arsa veya Arazi Ara
+                    </label>
+                    <div className="relative">
+                      <Input
+                        placeholder="Anahtar kelime, ilçe veya mahalle..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="h-12 pl-4 pr-4 text-lg border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200"
+                      />
+                      {searchQuery && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Emlak Türü */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <Building2 className="h-4 w-4 inline mr-2" />
+                      Emlak Türü
+                    </label>
+                    <Select value={selectedType} onValueChange={setSelectedType}>
+                      <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200">
+                        <SelectValue placeholder="Tümü" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tüm Emlak Türleri</SelectItem>
+                        <SelectItem value="Arsa">Arsa</SelectItem>
+                        <SelectItem value="Arazi">Arazi</SelectItem>
+                        <SelectItem value="Daire">Daire</SelectItem>
+                        <SelectItem value="Villa">Villa</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* İlçe Seçimi */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      <MapPin className="h-4 w-4 inline mr-2" />
+                      İlçe
+                    </label>
+                    <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+                      <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200">
+                        <SelectValue placeholder="Tümü" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Tüm İlçeler</SelectItem>
+                        <SelectItem value="Edremit">Edremit</SelectItem>
+                        <SelectItem value="Ayvalık">Ayvalık</SelectItem>
+                        <SelectItem value="Bandırma">Bandırma</SelectItem>
+                        <SelectItem value="Gönen">Gönen</SelectItem>
+                        <SelectItem value="İvrindi">İvrindi</SelectItem>
+                        <SelectItem value="Susurluk">Susurluk</SelectItem>
+                        <SelectItem value="Altıeylül">Altıeylül</SelectItem>
+                        <SelectItem value="Karesi">Karesi</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Arama Butonu */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2 opacity-0">
+                      Ara
+                    </label>
+                    <Button 
+                      className="w-full h-12 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                      onClick={() => {
+                        // Arama işlemi zaten otomatik çalışıyor
+                      }}
+                    >
+                      <Search className="h-5 w-5 mr-2" />
+                      Ara
+                    </Button>
+                  </div>
                 </div>
-                <Select value={selectedType} onValueChange={setSelectedType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Tür Seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
-                    <SelectItem value="Arsa">Arsa</SelectItem>
-                    <SelectItem value="Arazi">Arazi</SelectItem>
-                    <SelectItem value="Daire">Daire</SelectItem>
-                    <SelectItem value="Villa">Villa</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={selectedLocation} onValueChange={setSelectedLocation}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="İlçe Seçin" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tümü</SelectItem>
-                    <SelectItem value="Edremit">Edremit</SelectItem>
-                    <SelectItem value="Ayvalık">Ayvalık</SelectItem>
-                    <SelectItem value="Bandırma">Bandırma</SelectItem>
-                    <SelectItem value="Gönen">Gönen</SelectItem>
-                    <SelectItem value="İvrindi">İvrindi</SelectItem>
-                    <SelectItem value="Susurluk">Susurluk</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button className="bg-green-600 hover:bg-green-700">
-                  <Search className="h-4 w-4 mr-2" />
-                  Ara
-                </Button>
+
+                {/* Hızlı Filtreler */}
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <div className="flex flex-wrap gap-2">
+                    <span className="text-sm font-medium text-gray-600 mr-2">Hızlı Filtreler:</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedType("Arsa");
+                        setSelectedLocation("all");
+                      }}
+                      className="text-xs hover:bg-green-50 hover:border-green-300"
+                    >
+                      Arsa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedType("Arazi");
+                        setSelectedLocation("all");
+                      }}
+                      className="text-xs hover:bg-green-50 hover:border-green-300"
+                    >
+                      Arazi
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedType("all");
+                        setSelectedLocation("Edremit");
+                      }}
+                      className="text-xs hover:bg-green-50 hover:border-green-300"
+                    >
+                      Edremit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedType("all");
+                        setSelectedLocation("Bandırma");
+                      }}
+                      className="text-xs hover:bg-green-50 hover:border-green-300"
+                    >
+                      Bandırma
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("");
+                        setSelectedType("all");
+                        setSelectedLocation("all");
+                      }}
+                      className="text-xs hover:bg-red-50 hover:border-red-300 text-red-600"
+                    >
+                      Temizle
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
