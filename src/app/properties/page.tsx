@@ -300,7 +300,10 @@ function PropertiesContent() {
     try {
       setIsSubmitting(true);
       for (const propertyId of selectedProperties) {
-        await updateProperty(propertyId, { isPublished: true });
+        await updateProperty(propertyId, { 
+          isPublished: true,
+          status: 'SATISTA' // Yayınlanan emlakları otomatik olarak SATISTA yap
+        });
       }
       setSelectedProperties([]);
       alert(`${selectedProperties.length} emlak başarıyla yayınlandı!`);
