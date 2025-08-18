@@ -889,6 +889,18 @@ function PropertiesContent() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead>
+                              <Checkbox
+                                checked={selectedProperties.length === officeProperties.length && officeProperties.length > 0}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedProperties(officeProperties.map(p => p.id));
+                                  } else {
+                                    setSelectedProperties([]);
+                                  }
+                                }}
+                              />
+                            </TableHead>
                             <TableHead>Emlak</TableHead>
                             <TableHead>Konum</TableHead>
                             <TableHead>Tür</TableHead>
@@ -901,6 +913,12 @@ function PropertiesContent() {
                         <TableBody>
                           {officeProperties.map((property) => (
                             <TableRow key={property.id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedProperties.includes(property.id)}
+                                  onCheckedChange={(checked) => handleSelectProperty(property.id, checked as boolean)}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <div>
                                   <div className="font-medium">{property.title}</div>
@@ -969,6 +987,18 @@ function PropertiesContent() {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead>
+                              <Checkbox
+                                checked={selectedProperties.length === customerProperties.length && customerProperties.length > 0}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedProperties(customerProperties.map(p => p.id));
+                                  } else {
+                                    setSelectedProperties([]);
+                                  }
+                                }}
+                              />
+                            </TableHead>
                             <TableHead>Emlak</TableHead>
                             <TableHead>Müşteri</TableHead>
                             <TableHead>Konum</TableHead>
@@ -982,6 +1012,12 @@ function PropertiesContent() {
                         <TableBody>
                           {customerProperties.map((property) => (
                             <TableRow key={property.id}>
+                              <TableCell>
+                                <Checkbox
+                                  checked={selectedProperties.includes(property.id)}
+                                  onCheckedChange={(checked) => handleSelectProperty(property.id, checked as boolean)}
+                                />
+                              </TableCell>
                               <TableCell>
                                 <div>
                                   <div className="font-medium">{property.title}</div>
