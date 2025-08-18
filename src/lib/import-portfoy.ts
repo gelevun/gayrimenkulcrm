@@ -93,6 +93,9 @@ export async function importPortfoyData() {
           status = "SATISTA";
         }
         
+        // Ana sayfada yayınlanacak arsaları belirle (örnek olarak ilk 10'u)
+        const isPublished = parseInt(item.ilanNo) >= 1057; // 1057 ve üzeri yayınlanacak
+        
         // Zoning status'u belirle
         let zoningStatus = "IMARSIZ";
         let maxFloors: number | undefined;
@@ -178,6 +181,7 @@ export async function importPortfoyData() {
             publicTransportAccess: false,
             ownershipStatus: item.hisseTuru,
             constructionPermit: false,
+            isPublished: isPublished,
             userId: adminUser.id,
           }
         });

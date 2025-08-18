@@ -165,6 +165,7 @@ model Property {
   // Diğer Bilgiler
   constructionPermit    Boolean       @default(false)
   licenseInfo           String?
+  isPublished           Boolean       @default(false)  // Ana sayfada yayınlanacak mı?
   
   // İlişkiler
   userId                String?

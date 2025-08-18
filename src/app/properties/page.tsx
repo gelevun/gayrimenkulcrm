@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { 
   Search, 
   Plus, 
@@ -98,6 +99,7 @@ interface PropertyFormData {
   hasGas: boolean;
   hasSewerage: boolean;
   distanceToMainRoad: number;
+  isPublished: boolean;
   publicTransportAccess: boolean;
   ownershipStatus: string;
   constructionPermit: boolean;
@@ -129,6 +131,7 @@ const initialFormData: PropertyFormData = {
   hasGas: false,
   hasSewerage: false,
   distanceToMainRoad: 0,
+  isPublished: false,
   publicTransportAccess: false,
   ownershipStatus: "",
   constructionPermit: false,
@@ -298,6 +301,7 @@ function PropertiesContent() {
       maxFloors: property.maxFloors || 0,
       kaks: property.kaks || 0,
       gabari: property.gabari || 0,
+      isPublished: property.isPublished || false,
       hasElectricity: property.hasElectricity,
       hasWater: property.hasWater,
       hasGas: property.hasGas,
@@ -697,6 +701,19 @@ function PropertiesContent() {
                                 onChange={(e) => setFormData({...formData, parcelNumber: e.target.value})}
                                 placeholder="Ada numarası"
                               />
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor="isPublished">Ana Sayfada Yayınla</Label>
+                              <div className="flex items-center space-x-2">
+                                <Switch
+                                  id="isPublished"
+                                  checked={formData.isPublished}
+                                  onCheckedChange={(checked) => setFormData({...formData, isPublished: checked})}
+                                />
+                                <Label htmlFor="isPublished" className="text-sm text-gray-600">
+                                  {formData.isPublished ? "Yayınlanacak" : "Yayınlanmayacak"}
+                                </Label>
+                              </div>
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor="blockNumber">Parsel No</Label>

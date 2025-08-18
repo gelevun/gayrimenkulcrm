@@ -70,6 +70,7 @@ export async function GET(request: NextRequest) {
     const city = searchParams.get("city");
     const customerId = searchParams.get("customerId");
     const isOffice = searchParams.get("isOffice");
+    const isPublished = searchParams.get("isPublished");
 
     let where: any = {};
 
@@ -102,6 +103,10 @@ export async function GET(request: NextRequest) {
       where.customerId = null;
     } else if (isOffice === "false") {
       where.customerId = { not: null };
+    }
+
+    if (isPublished === "true") {
+      where.isPublished = true;
     }
 
     const properties = await db.property.findMany({

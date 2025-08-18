@@ -100,7 +100,7 @@ export default function HomePage() {
     const fetchProperties = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/properties?status=SATISTA');
+        const response = await fetch('/api/properties?status=SATISTA&isPublished=true');
         if (!response.ok) {
           throw new Error('Portföy verileri yüklenemedi');
         }

@@ -73,6 +73,7 @@ export interface Property {
   priceGoldGrams?: number;
   constructionPermit: boolean;
   licenseInfo?: string;
+  isPublished?: boolean;
   userId?: string;
   customerId?: string;
   createdAt: string;
