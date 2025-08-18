@@ -145,6 +145,8 @@ function PropertiesContent() {
   const [selectedProperty, setSelectedProperty] = useState<Property | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [selectedPropertyForDetails, setSelectedPropertyForDetails] = useState<Property | null>(null);
   const [viewMode, setViewMode] = useState("cards");
   const [activeTab, setActiveTab] = useState("office");
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
@@ -350,6 +352,11 @@ function PropertiesContent() {
     setIsEditDialogOpen(true);
   };
 
+  const openDetailsDialog = (property: Property) => {
+    setSelectedPropertyForDetails(property);
+    setIsDetailsDialogOpen(true);
+  };
+
   const resetForm = () => {
     setFormData(initialFormData);
     setFormError("");
@@ -415,7 +422,12 @@ function PropertiesContent() {
           )}
         </div>
         <div className="flex space-x-2">
-          <Button size="sm" variant="outline" className="flex-1">
+          <Button 
+            size="sm" 
+            variant="outline" 
+            className="flex-1"
+            onClick={() => openDetailsDialog(property)}
+          >
             Detaylar
           </Button>
           <Button 
@@ -848,6 +860,516 @@ function PropertiesContent() {
                       </DialogContent>
                     </Dialog>
                   )}
+
+                  {/* Düzenleme Dialog'u */}
+                  <Dialog open={isEditDialogOpen} onOpenChange={(open) => {
+                    setIsEditDialogOpen(open);
+                    if (!open) resetForm();
+                  }}>
+                    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Emlak Düzenle</DialogTitle>
+                        <DialogDescription>
+                          Emlak bilgilerini güncelleyin.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        {formError && (
+                          <Alert variant="destructive">
+                            <AlertDescription>{formError}</AlertDescription>
+                          </Alert>
+                        )}
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-title">Başlık *</Label>
+                            <Input
+                              id="edit-title"
+                              value={formData.title}
+                              onChange={(e) => setFormData({...formData, title: e.target.value})}
+                              placeholder="Emlak başlığı"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-propertyType">Emlak Türü *</Label>
+                            <Select value={formData.propertyType} onValueChange={(value) => setFormData({...formData, propertyType: value})}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Arsa">Arsa</SelectItem>
+                                <SelectItem value="Arazi">Arazi</SelectItem>
+                                <SelectItem value="Bina">Bina</SelectItem>
+                                <SelectItem value="Daire">Daire</SelectItem>
+                                <SelectItem value="Villa">Villa</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="edit-description">Açıklama</Label>
+                          <Textarea
+                            id="edit-description"
+                            value={formData.description}
+                            onChange={(e) => setFormData({...formData, description: e.target.value})}
+                            placeholder="Emlak açıklaması"
+                            rows={3}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-city">İl *</Label>
+                            <Input
+                              id="edit-city"
+                              value={formData.city}
+                              onChange={(e) => setFormData({...formData, city: e.target.value})}
+                              placeholder="İstanbul"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-district">İlçe *</Label>
+                            <Input
+                              id="edit-district"
+                              value={formData.district}
+                              onChange={(e) => setFormData({...formData, district: e.target.value})}
+                              placeholder="Beşiktaş"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-neighborhood">Mahalle</Label>
+                            <Input
+                              id="edit-neighborhood"
+                              value={formData.neighborhood}
+                              onChange={(e) => setFormData({...formData, neighborhood: e.target.value})}
+                              placeholder="Mahalle"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-netArea">Net Alan (m²) *</Label>
+                            <Input
+                              id="edit-netArea"
+                              type="number"
+                              value={formData.netArea}
+                              onChange={(e) => setFormData({...formData, netArea: parseFloat(e.target.value) || 0})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-grossArea">Brüt Alan (m²)</Label>
+                            <Input
+                              id="edit-grossArea"
+                              type="number"
+                              value={formData.grossArea}
+                              onChange={(e) => setFormData({...formData, grossArea: parseFloat(e.target.value) || 0})}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-priceTL">Fiyat (TL) *</Label>
+                            <Input
+                              id="edit-priceTL"
+                              type="number"
+                              value={formData.priceTL}
+                              onChange={(e) => setFormData({...formData, priceTL: parseFloat(e.target.value) || 0})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-priceUSD">Fiyat (USD)</Label>
+                            <Input
+                              id="edit-priceUSD"
+                              type="number"
+                              value={formData.priceUSD}
+                              onChange={(e) => setFormData({...formData, priceUSD: parseFloat(e.target.value) || 0})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-priceEUR">Fiyat (EUR)</Label>
+                            <Input
+                              id="edit-priceEUR"
+                              type="number"
+                              value={formData.priceEUR}
+                              onChange={(e) => setFormData({...formData, priceEUR: parseFloat(e.target.value) || 0})}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-status">Durum</Label>
+                            <Select value={formData.status} onValueChange={(value: any) => setFormData({...formData, status: value})}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="SATISTA">Satışta</SelectItem>
+                                <SelectItem value="REZERVE">Rezerve</SelectItem>
+                                <SelectItem value="SATILDI">Satıldı</SelectItem>
+                                <SelectItem value="BEKLEMEDE">Beklemede</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-zoningStatus">İmar Durumu</Label>
+                            <Select value={formData.zoningStatus} onValueChange={(value: any) => setFormData({...formData, zoningStatus: value})}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="IMARLI">İmarlı</SelectItem>
+                                <SelectItem value="IMARSIZ">İmarsız</SelectItem>
+                                <SelectItem value="KISMEN_IMARLI">Kısmen İmarlı</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-parcelNumber">Ada No</Label>
+                            <Input
+                              id="edit-parcelNumber"
+                              value={formData.parcelNumber}
+                              onChange={(e) => setFormData({...formData, parcelNumber: e.target.value})}
+                              placeholder="Ada numarası"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-blockNumber">Parsel No</Label>
+                            <Input
+                              id="edit-blockNumber"
+                              value={formData.blockNumber}
+                              onChange={(e) => setFormData({...formData, blockNumber: e.target.value})}
+                              placeholder="Parsel numarası"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-isPublished">Ana Sayfada Yayınla</Label>
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="edit-isPublished"
+                                checked={formData.isPublished}
+                                onCheckedChange={(checked) => setFormData({...formData, isPublished: checked})}
+                              />
+                              <Label htmlFor="edit-isPublished" className="text-sm text-gray-600">
+                                {formData.isPublished ? "Yayınlanacak" : "Yayınlanmayacak"}
+                              </Label>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Altyapı Durumu</Label>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="edit-hasElectricity"
+                                checked={formData.hasElectricity}
+                                onCheckedChange={(checked) => setFormData({...formData, hasElectricity: checked as boolean})}
+                              />
+                              <Label htmlFor="edit-hasElectricity">Elektrik</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="edit-hasWater"
+                                checked={formData.hasWater}
+                                onCheckedChange={(checked) => setFormData({...formData, hasWater: checked as boolean})}
+                              />
+                              <Label htmlFor="edit-hasWater">Su</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="edit-hasGas"
+                                checked={formData.hasGas}
+                                onCheckedChange={(checked) => setFormData({...formData, hasGas: checked as boolean})}
+                              />
+                              <Label htmlFor="edit-hasGas">Doğalgaz</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="edit-hasSewerage"
+                                checked={formData.hasSewerage}
+                                onCheckedChange={(checked) => setFormData({...formData, hasSewerage: checked as boolean})}
+                              />
+                              <Label htmlFor="edit-hasSewerage">Kanalizasyon</Label>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* İmar Detayları */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-maxFloors">Maksimum Kat</Label>
+                            <Input
+                              id="edit-maxFloors"
+                              type="number"
+                              value={formData.maxFloors}
+                              onChange={(e) => setFormData({...formData, maxFloors: parseFloat(e.target.value) || 0})}
+                              placeholder="0"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-kaks">KAKS</Label>
+                            <Input
+                              id="edit-kaks"
+                              type="number"
+                              step="0.01"
+                              value={formData.kaks}
+                              onChange={(e) => setFormData({...formData, kaks: parseFloat(e.target.value) || 0})}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="edit-gabari">Hmaks (m)</Label>
+                            <Input
+                              id="edit-gabari"
+                              type="number"
+                              step="0.1"
+                              value={formData.gabari}
+                              onChange={(e) => setFormData({...formData, gabari: parseFloat(e.target.value) || 0})}
+                              placeholder="0.0"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                          <X className="h-4 w-4 mr-2" />
+                          İptal
+                        </Button>
+                        <Button onClick={handleEditProperty} disabled={isSubmitting}>
+                          <Save className="h-4 w-4 mr-2" />
+                          {isSubmitting ? "Güncelleniyor..." : "Güncelle"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Detaylar Dialog'u */}
+                  <Dialog open={isDetailsDialogOpen} onOpenChange={setIsDetailsDialogOpen}>
+                    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Emlak Detayları</DialogTitle>
+                        <DialogDescription>
+                          {selectedPropertyForDetails?.title}
+                        </DialogDescription>
+                      </DialogHeader>
+                      {selectedPropertyForDetails && (
+                        <div className="space-y-6">
+                          {/* Temel Bilgiler */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="text-lg font-semibold mb-3">Temel Bilgiler</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Başlık:</span>
+                                    <span className="font-medium">{selectedPropertyForDetails.title}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Emlak Türü:</span>
+                                    <Badge variant="outline">{propertyTypeLabels[selectedPropertyForDetails.propertyType]}</Badge>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Durum:</span>
+                                    <Badge className={`${statusColors[selectedPropertyForDetails.status]} text-white`}>
+                                      {statusLabels[selectedPropertyForDetails.status]}
+                                    </Badge>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Yayın Durumu:</span>
+                                    <Badge variant={selectedPropertyForDetails.isPublished ? "default" : "secondary"}>
+                                      {selectedPropertyForDetails.isPublished ? "Yayında" : "Yayında Değil"}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div>
+                                <h3 className="text-lg font-semibold mb-3">Konum Bilgileri</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">İl:</span>
+                                    <span className="font-medium">{selectedPropertyForDetails.city}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">İlçe:</span>
+                                    <span className="font-medium">{selectedPropertyForDetails.district}</span>
+                                  </div>
+                                  {selectedPropertyForDetails.neighborhood && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Mahalle:</span>
+                                      <span className="font-medium">{selectedPropertyForDetails.neighborhood}</span>
+                                    </div>
+                                  )}
+                                  {selectedPropertyForDetails.address && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Adres:</span>
+                                      <span className="font-medium">{selectedPropertyForDetails.address}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-4">
+                              <div>
+                                <h3 className="text-lg font-semibold mb-3">Alan ve Fiyat</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Net Alan:</span>
+                                    <span className="font-medium">{selectedPropertyForDetails.netArea.toLocaleString('tr-TR')} m²</span>
+                                  </div>
+                                  {(selectedPropertyForDetails.grossArea || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Brüt Alan:</span>
+                                      <span className="font-medium">{(selectedPropertyForDetails.grossArea || 0).toLocaleString('tr-TR')} m²</span>
+                                    </div>
+                                  )}
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Fiyat (TL):</span>
+                                    <span className="font-medium text-green-600">{formatCurrency(selectedPropertyForDetails.priceTL)}</span>
+                                  </div>
+                                  {(selectedPropertyForDetails.priceUSD || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Fiyat (USD):</span>
+                                      <span className="font-medium">${(selectedPropertyForDetails.priceUSD || 0).toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                  {(selectedPropertyForDetails.priceEUR || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Fiyat (EUR):</span>
+                                      <span className="font-medium">€{(selectedPropertyForDetails.priceEUR || 0).toLocaleString()}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div>
+                                <h3 className="text-lg font-semibold mb-3">İmar Bilgileri</h3>
+                                <div className="space-y-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">İmar Durumu:</span>
+                                    <Badge variant="outline">{zoningStatusLabels[selectedPropertyForDetails.zoningStatus || 'IMARLI']}</Badge>
+                                  </div>
+                                  {(selectedPropertyForDetails.maxFloors || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Maksimum Kat:</span>
+                                      <span className="font-medium">{selectedPropertyForDetails.maxFloors}</span>
+                                    </div>
+                                  )}
+                                  {(selectedPropertyForDetails.kaks || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">KAKS:</span>
+                                      <span className="font-medium">{selectedPropertyForDetails.kaks}</span>
+                                    </div>
+                                  )}
+                                  {(selectedPropertyForDetails.gabari || 0) > 0 && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600">Hmaks:</span>
+                                      <span className="font-medium">{selectedPropertyForDetails.gabari}m</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Altyapı Durumu */}
+                          <div>
+                            <h3 className="text-lg font-semibold mb-3">Altyapı Durumu</h3>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${selectedPropertyForDetails.hasElectricity ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                <span className={selectedPropertyForDetails.hasElectricity ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                                  Elektrik
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${selectedPropertyForDetails.hasWater ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                <span className={selectedPropertyForDetails.hasWater ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                                  Su
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${selectedPropertyForDetails.hasGas ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                <span className={selectedPropertyForDetails.hasGas ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                                  Doğalgaz
+                                </span>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <div className={`w-3 h-3 rounded-full ${selectedPropertyForDetails.hasSewerage ? 'bg-green-500' : 'bg-gray-300'}`}></div>
+                                <span className={selectedPropertyForDetails.hasSewerage ? 'text-green-600 font-medium' : 'text-gray-500'}>
+                                  Kanalizasyon
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Açıklama */}
+                          {selectedPropertyForDetails.description && (
+                            <div>
+                              <h3 className="text-lg font-semibold mb-3">Açıklama</h3>
+                              <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">
+                                {selectedPropertyForDetails.description}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Sistem Bilgileri */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                              <h3 className="text-lg font-semibold mb-3">Sistem Bilgileri</h3>
+                              <div className="space-y-2 text-sm text-gray-600">
+                                <div className="flex justify-between">
+                                  <span>Oluşturulma:</span>
+                                  <span>{new Date(selectedPropertyForDetails.createdAt).toLocaleDateString('tr-TR')}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Son Güncelleme:</span>
+                                  <span>{new Date(selectedPropertyForDetails.updatedAt).toLocaleDateString('tr-TR')}</span>
+                                </div>
+                                {selectedPropertyForDetails.user && (
+                                  <div className="flex justify-between">
+                                    <span>Sorumlu:</span>
+                                    <span>{selectedPropertyForDetails.user.name}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            <div>
+                              <h3 className="text-lg font-semibold mb-3">İşlemler</h3>
+                              <div className="flex space-x-2">
+                                <Button 
+                                  onClick={() => {
+                                    setIsDetailsDialogOpen(false);
+                                    openEditDialog(selectedPropertyForDetails);
+                                  }}
+                                  className="flex-1"
+                                >
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Düzenle
+                                </Button>
+                                <Button 
+                                  variant="outline"
+                                  onClick={() => setIsDetailsDialogOpen(false)}
+                                  className="flex-1"
+                                >
+                                  Kapat
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </div>
             </CardHeader>
