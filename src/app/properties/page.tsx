@@ -150,6 +150,7 @@ function PropertiesContent() {
   const [formData, setFormData] = useState<PropertyFormData>(initialFormData);
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedProperties, setSelectedProperties] = useState<string[]>([]);
 
   // Auth context
   const { user, hasPermission } = useAuth();
@@ -281,6 +282,35 @@ function PropertiesContent() {
     setUploadedFiles(prev => prev.filter(file => file !== fileToRemove));
   };
 
+  // Toplu seçim işlemleri
+  const handleSelectProperty = (propertyId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedProperties(prev => [...prev, propertyId]);
+    } else {
+      setSelectedProperties(prev => prev.filter(id => id !== propertyId));
+    }
+  };
+
+  const handleBulkPublish = async () => {
+    if (selectedProperties.length === 0) {
+      alert("Lütfen yayınlanacak emlakları seçin");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      for (const propertyId of selectedProperties) {
+        await updateProperty(propertyId, { isPublished: true });
+      }
+      setSelectedProperties([]);
+      alert(`${selectedProperties.length} emlak başarıyla yayınlandı!`);
+    } catch (error) {
+      alert("Yayınlama işlemi sırasında hata oluştu");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const openEditDialog = (property: Property) => {
     setSelectedProperty(property);
     setFormData({
@@ -333,6 +363,13 @@ function PropertiesContent() {
           <Badge className={`${statusColors[property.status]} text-white`}>
             {statusLabels[property.status]}
           </Badge>
+        </div>
+        <div className="absolute top-2 left-2">
+          <Checkbox
+            checked={selectedProperties.includes(property.id)}
+            onCheckedChange={(checked) => handleSelectProperty(property.id, checked as boolean)}
+            className="bg-white"
+          />
         </div>
       </div>
       <CardContent className="p-4">
@@ -399,8 +436,26 @@ function PropertiesContent() {
         
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gradient-to-br from-green-50 to-emerald-50 p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Emlak Portföy Yönetimi</h1>
-            <p className="text-gray-600 mt-2">Ofis ve müşteri portföylerinizi yönetin</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">Emlak Portföy Yönetimi</h1>
+                <p className="text-gray-600 mt-2">Ofis ve müşteri portföylerinizi yönetin</p>
+              </div>
+              {selectedProperties.length > 0 && (
+                <Button 
+                  onClick={handleBulkPublish}
+                  disabled={isSubmitting}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {isSubmitting ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  ) : (
+                    <Star className="h-4 w-4 mr-2" />
+                  )}
+                  {selectedProperties.length} Emlak Yayınla
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* İstatistik Kartları */}
