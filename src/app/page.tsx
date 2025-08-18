@@ -53,6 +53,10 @@ interface Property {
   netArea: number;
   grossArea?: number;
   zoningStatus?: 'IMARLI' | 'IMARSIZ' | 'KISMEN_IMARLI';
+  zoningDetails?: string;
+  maxFloors?: number;
+  kaks?: number;
+  gabari?: number;
   hasElectricity: boolean;
   hasWater: boolean;
   hasGas: boolean;
@@ -60,6 +64,7 @@ interface Property {
   priceTL: number;
   priceUSD?: number;
   priceEUR?: number;
+  priceGoldGrams?: number;
   createdAt: string;
   updatedAt: string;
   user?: {
@@ -166,6 +171,27 @@ export default function HomePage() {
             {property.zoningStatus || 'Belirtilmemiş'}
           </Badge>
         </div>
+        
+        {/* İmar Detayları */}
+        {(property.maxFloors || property.kaks || property.gabari) && (
+          <div className="flex flex-wrap gap-1 mb-2">
+            {property.maxFloors && (
+              <Badge variant="outline" className="text-xs">
+                {property.maxFloors} Kat
+              </Badge>
+            )}
+            {property.kaks && (
+              <Badge variant="outline" className="text-xs">
+                KAKS: {property.kaks}
+              </Badge>
+            )}
+            {property.gabari && (
+              <Badge variant="outline" className="text-xs">
+                Hmaks: {property.gabari}m
+              </Badge>
+            )}
+          </div>
+        )}
         
         <h3 className="font-semibold text-lg mb-2 line-clamp-2 group-hover:text-green-600 transition-colors">
           {property.title}

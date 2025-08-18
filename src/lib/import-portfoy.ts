@@ -95,10 +95,32 @@ export async function importPortfoyData() {
         
         // Zoning status'u belirle
         let zoningStatus = "IMARSIZ";
+        let maxFloors: number | undefined;
+        let kaks: number | undefined;
+        let gabari: number | undefined;
+        
         if (item.imarDurumu.toLowerCase().includes("imarlı")) {
           zoningStatus = "IMARLI";
         } else if (item.imarDurumu.toLowerCase().includes("kısmen")) {
           zoningStatus = "KISMEN_IMARLI";
+        }
+        
+        // KAKS değerini çıkar
+        const kaksMatch = item.imarDurumu.match(/KAKS:?\s*([\d,]+)/i);
+        if (kaksMatch) {
+          kaks = parseFloat(kaksMatch[1].replace(",", "."));
+        }
+        
+        // Kat sayısını çıkar
+        const katMatch = item.imarDurumu.match(/(\d+(?:,\d+)?)\s*kat/i);
+        if (katMatch) {
+          maxFloors = parseFloat(katMatch[1].replace(",", "."));
+        }
+        
+        // Hmaks değerini çıkar
+        const hmaksMatch = item.imarDurumu.match(/Hmaks:?\s*([\d,]+)\s*metre/i);
+        if (hmaksMatch) {
+          gabari = parseFloat(hmaksMatch[1].replace(",", "."));
         }
         
         // Admin user'ı bul
@@ -144,6 +166,9 @@ export async function importPortfoyData() {
             grossArea: m2Number,
             zoningStatus: zoningStatus as any,
             zoningDetails: item.imarDurumu,
+            maxFloors: maxFloors,
+            kaks: kaks,
+            gabari: gabari,
             priceTL: priceTL,
             priceGoldGrams: grAltinPrice,
             hasElectricity: false,
